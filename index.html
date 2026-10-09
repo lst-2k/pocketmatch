@@ -2,6 +2,10 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pocket Match</title>
+<meta name="description" content="A pool-ball match-3 game. Chain clears, wild 8-balls, cue balls and chalk blasts.">
+<meta property="og:title" content="Pocket Match">
+<meta property="og:description" content="A pool-ball match-3 game. Can you beat my score?">
+<meta property="og:url" content="https://lst-2k.github.io/pocketmatch/">
 <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:dark;--ink:#f3e9d2;--gold:#e0a93f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -63,11 +67,11 @@ button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 @keyframes sh2{to{background-position:-200% 0}}
 main{position:relative}
 #snd{position:absolute;top:16px;right:14px;width:42px;height:42px;padding:0;font-size:20px;line-height:1;background:#00000066;border:1px solid #ffffff2a;border-radius:50%}
-#start,#prev{position:fixed;inset:0;background:#000c;display:grid;place-items:center;z-index:9;padding:20px;animation:ovf .3s ease-out}
-#start[hidden],#prev[hidden]{display:none}
-#start div,#prev div{background:#2a170c;border:2px solid var(--gold);border-radius:18px;padding:26px 30px;text-align:center;width:min(88vw,340px);animation:ovp .55s cubic-bezier(.3,1.4,.5,1)}
-#start h2{font:28px/1.1 "Bowlby One",Impact,sans-serif;margin:0 0 10px;color:var(--gold)}
-#start p{margin:4px 0 18px}
+#start,#prev,#lb{position:fixed;inset:0;background:#000c;display:grid;place-items:center;z-index:9;padding:20px;animation:ovf .3s ease-out}
+#start[hidden],#prev[hidden],#lb[hidden]{display:none}
+#start div,#prev div,#lb div{background:#2a170c;border:2px solid var(--gold);border-radius:18px;padding:26px 30px;text-align:center;width:min(88vw,340px);animation:ovp .55s cubic-bezier(.3,1.4,.5,1)}
+#start h2,#lb h2{font:28px/1.1 "Bowlby One",Impact,sans-serif;margin:0 0 10px;color:var(--gold)}
+#start p,#lb p{margin:4px 0 18px}
 .ball.st .b{background:radial-gradient(circle at 33% 27%,#fffe 0 5%,#fff0 20%),radial-gradient(circle at 42% 36%,#0000 40%,#00000073 100%),linear-gradient(#f4efe3 0 27%,var(--c) 27% 73%,#f4efe3 73%)}
 .ball.cue .b{animation:wob 1s ease-in-out infinite alternate;box-shadow:0 0 0 2px #fff9,0 0 14px 4px #fffa}
 .ball.cue .b span{display:none}
@@ -94,6 +98,16 @@ main{position:relative}
 .ball.chalk .b::before{content:'';position:absolute;left:18%;right:18%;top:16%;height:26%;border-radius:25%;background:radial-gradient(ellipse at 50% 60%,#fff 0,#dfeaffcc 55%,#fff0 100%)}
 .streak.v{top:0;width:12.5%;height:100%;background:linear-gradient(180deg,#fff0,#fff 50%,#fff0);animation:stkv .5s ease-out forwards}
 @keyframes stkv{from{transform:translateY(-100%);opacity:1}to{transform:translateY(100%);opacity:0}}
+.ghost{background:transparent;color:var(--gold);border:2px solid var(--gold)}
+#start button:not([hidden]){display:block;margin:10px auto 0}
+#nm{display:block;width:100%;margin:0 0 12px;padding:11px 14px;border-radius:999px;border:2px solid #ffffff2a;background:#0006;color:var(--ink);font:16px system-ui,sans-serif;text-align:center}
+#lb div{max-height:88vh;overflow:auto}
+#lbl{list-style:none;margin:0 0 14px;padding:0;text-align:left}
+#lbl li{display:flex;gap:8px;padding:7px 8px;border-radius:8px;font-size:15px}
+#lbl li.me{background:#e0a93f33;outline:1px solid var(--gold)}
+#lbl .rk{width:24px;opacity:.7}
+#lbl .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#lbl .sc{font-family:"Bowlby One",Impact,sans-serif}
 @media (prefers-reduced-motion:reduce){.ball{transition-duration:.01s}.b{animation-duration:.01s!important}}
 </style></head>
 <body><main>
@@ -103,8 +117,9 @@ main{position:relative}
 <div class="rail"><i class="pk"></i><i class="pk"></i><i class="pk"></i><i class="pk"></i><div id="board"></div><div id="bn" hidden></div></div>
 <p id="msg" aria-live="polite">Match 4 for a cue ball (clears a row) or 5 for chalk (clears row and column). Stripes +8. 8-balls are wild.</p>
 </main>
-<div id="start"><div><h2>Pocket Match</h2><p>Match 3+ balls of a colour. Each ball scores its number × 10, and rare black 8-balls are wild and double the match.</p><noscript><p><b>JavaScript is off.</b> Open this page in Safari or Chrome rather than a chat preview.</p></noscript><button id="go">Break off</button></div></div>
-<div id="over" hidden><canvas id="cf"></canvas><div><h2 id="oh">Out of shots</h2><b id="big">0</b><p id="fin"></p><button id="again" hidden>Rack again</button><button id="shr" hidden>Share score</button></div></div>
+<div id="start"><div><h2>Pocket Match</h2><p>Match 3+ balls of a colour. Each ball scores its number × 10, and rare black 8-balls are wild and double the match.</p><noscript><p><b>JavaScript is off.</b> Open this page in Safari or Chrome rather than a chat preview.</p></noscript><input id="nm" maxlength="12" placeholder="Your name" autocomplete="nickname" aria-label="Your name"><button id="go">Break off</button><button id="lbo" class="ghost" hidden>This week's top 10</button></div></div>
+<div id="over" hidden><canvas id="cf"></canvas><div><h2 id="oh">Out of shots</h2><b id="big">0</b><p id="fin"></p><button id="again" hidden>Rack again</button><button id="shr" hidden>Share score</button><button id="lbb" class="ghost" hidden>Weekly top 10</button></div></div>
+<div id="lb" hidden><div><h2>Weekly top 10</h2><p id="lbsub"></p><ol id="lbl"></ol><button id="lbc">Close</button></div></div>
 <div id="prev" hidden><div><img id="pimg" alt="Score card"><a id="wa" target="_blank" rel="noopener">Send on WhatsApp</a><button id="sv" hidden>Save image</button><p>Tip: save the image, then attach it in WhatsApp or any app. Or press and hold the card.</p><button id="pcl">Close</button></div></div>
 <audio id="bgm" loop preload="auto" src="polka-dot-high-score.mp3"></audio>
 <script>
@@ -209,8 +224,8 @@ async function reRack(m){say(m||'No moves left. Re-racking!');whoosh(.5);
  await sleep(1000);all.forEach(b=>b.el.style.transitionDelay='')}
 let cfOn=false;
 function end(){busy=true;clearHint();const nb=score>best;if(nb){best=score;try{localStorage.setItem('pm-best',best)}catch(e){}}
- ui();$('over').hidden=false;fitBig();$('again').hidden=true;$('shr').hidden=true;$('fin').textContent='';$('oh').textContent=nb?'New high score!':'Out of shots';$('oh').className=nb?'nb':'';
- countUp($('big'),score,1800,()=>{$('fin').textContent='Level '+level+'. '+(nb?'Best of the night!':'Best is '+best);if(nb){confetti();[523,659,784,1047].forEach((f,i)=>tone(f,i*.1,.4,.18,'triangle'))}setTimeout(()=>{$('again').hidden=false;$('shr').hidden=false},nb?1600:800)})}
+ ui();$('over').hidden=false;fitBig();$('again').hidden=true;$('shr').hidden=true;$('lbb').hidden=true;$('fin').textContent='';$('oh').textContent=nb?'New high score!':'Out of shots';$('oh').className=nb?'nb':'';
+ countUp($('big'),score,1800,()=>{$('fin').textContent='Level '+level+'. '+(nb?'Best of the night!':'Best is '+best);if(nb){confetti();[523,659,784,1047].forEach((f,i)=>tone(f,i*.1,.4,.18,'triangle'))}submitScore();setTimeout(()=>{$('again').hidden=false;$('shr').hidden=false;$('lbb').hidden=!window.LB},nb?1600:800)})}
 function fitBig(){const el=$('big'),p=el.parentElement,cs=getComputedStyle(p);el.style.fontSize='';el.textContent=score;
  const max=p.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-12;let fs=parseFloat(getComputedStyle(el).fontSize);
  while(el.offsetWidth>max&&fs>20){fs-=2;el.style.fontSize=fs+'px'}}
@@ -257,6 +272,20 @@ function newGame(){cfOn=false;clearHint();board.innerHTML='';g=[];score=0;shots=
  board.offsetHeight;all.forEach(b=>place(b,Math.round(b.r+N+2),b.c));
  ui();setTimeout(()=>{all.forEach(b=>b.el.style.transitionDelay='');busy=false;armHint()},1000)}
 $('again').onclick=newGame;$('shr').onclick=shareCard;$('pcl').onclick=()=>$('prev').hidden=true;
+let pname='';try{pname=localStorage.getItem('pm-name')||''}catch(e){}
+$('nm').value=pname;
+function cleanName(){return($('nm').value||'').replace(/[^\w .'-]/g,'').trim().slice(0,12)||'Player'}
+function lbOn(){$('lbo').hidden=false}
+if(window.LB)lbOn();addEventListener('lbready',lbOn);
+const fmt=ms=>{const m=Math.max(0,Math.floor(ms/6e4)),d=Math.floor(m/1440),h=Math.floor(m%1440/60);return d?d+'d '+h+'h':h+'h '+m%60+'m'};
+async function submitScore(){if(!window.LB||score<=0)return;try{const r=await LB.submit(pname||'Player',score,level);$('fin').textContent+=' You are #'+r.rank+' this week.'}catch(e){}}
+async function showLB(){if(!window.LB)return;const el=$('lbl');$('lb').hidden=false;$('lbsub').textContent='Loading...';el.innerHTML='';
+ try{const r=await LB.top();$('lbsub').textContent='Week '+r.week.split('-W')[1]+'. Resets in '+fmt(r.reset-Date.now())+(r.rows.length?'':'. No scores yet, be the first!');
+  const add=(rk,name,sc,me)=>{const li=document.createElement('li');if(me)li.className='me';li.innerHTML='<span class="rk"></span><span class="nm"></span><span class="sc"></span>';li.children[0].textContent=rk;li.children[1].textContent=name;li.children[2].textContent=sc;el.appendChild(li)};
+  r.rows.forEach((x,i)=>add(i+1,x.name+' (L'+x.level+')',x.score,x.id==r.me));
+  if(r.myRank>r.rows.length)add(r.myRank,'You',r.myScore,true)}catch(e){$('lbsub').textContent='Could not load the leaderboard.'}}
+$('lbo').onclick=$('lbb').onclick=showLB;$('lbc').onclick=()=>$('lb').hidden=true;
+const GAME_URL='https://lst-2k.github.io/pocketmatch/';
 async function shareCard(){try{await document.fonts.load('80px "Bowlby One"')}catch(e){}
  const cv=document.createElement('canvas'),x=cv.getContext('2d'),nb=score>=best&&score>0,F='"Bowlby One",Impact,sans-serif';cv.width=1080;cv.height=1350;
  const gr=x.createLinearGradient(0,0,0,1350);gr.addColorStop(0,'#3b2417');gr.addColorStop(1,'#120a06');x.fillStyle=gr;x.fillRect(0,0,1080,1350);
@@ -268,14 +297,35 @@ async function shareCard(){try{await document.fonts.load('80px "Bowlby One"')}ca
  let fs=230;do{x.font=fs+'px '+F;fs-=6}while(x.measureText(score).width>860&&fs>40);x.fillStyle='#fff';x.fillText(score,540,860);
  x.fillStyle='#e0a93f';x.font='64px '+F;x.fillText('Level '+level+' reached',540,990);x.fillStyle='#f3e9d2';x.font='48px '+F;x.fillText('Best: '+best,540,1070);x.fillText('Can you beat it?',540,1190);
  const blob=await new Promise(r=>cv.toBlob(r,'image/png')),file=new File([blob],'pocket-match-score.png',{type:'image/png'});
- if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Pocket Match',text:'I scored '+score+' on Pocket Match! Can you beat it?'});return}catch(e){if(e.name=='AbortError')return}}
+ if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Pocket Match',text:'I scored '+score+' on Pocket Match! Can you beat it?',url:GAME_URL});return}catch(e){if(e.name=='AbortError')return}}
 
- const txt='I scored '+score+' on Pocket Match 🎱 (Level '+level+'). Can you beat it?';
+ const txt='I scored '+score+' on Pocket Match 🎱 (Level '+level+'). Can you beat it? '+GAME_URL;
  $('pimg').src=cv.toDataURL('image/png');$('wa').href='https://wa.me/?text='+encodeURIComponent(txt);
  let dl=null;try{dl=window.claude?await claude.use('downloads'):null}catch(e){}
  $('sv').hidden=!dl;$('sv').textContent='Save image';
  $('sv').onclick=async()=>{try{await dl.save({filename:'pocket-match-score.png',data:blob});$('sv').textContent='Saved!'}catch(e){if(e&&e.code!='declined')$('sv').textContent='Could not save'}};
  $('prev').hidden=false}
 score=0;shots=SH;ui();
-$('go').onclick=()=>{$('start').hidden=true;newGame();try{unlock();playing=true;musicSync()}catch(e){}};
-</script></body></html>
+$('go').onclick=()=>{pname=cleanName();try{localStorage.setItem('pm-name',pname)}catch(e){}$('start').hidden=true;newGame();try{unlock();playing=true;musicSync()}catch(e){}};
+</script><script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import{getAuth,signInAnonymously}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import{getFirestore,doc,getDoc,setDoc,collection,query,where,orderBy,limit,getDocs,getCountFromServer,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+try{
+const app=initializeApp({apiKey:"AIzaSyAXYqvWqiKIKVfMCkAMvPvdaLXbSD0leuw",authDomain:"pocketmatch-8c8bc.firebaseapp.com",projectId:"pocketmatch-8c8bc",storageBucket:"pocketmatch-8c8bc.firebasestorage.app",messagingSenderId:"1072856545240",appId:"1:1072856545240:web:87cb39649122a4a27da4ad"});
+const auth=getAuth(app),db=getFirestore(app);
+const wk=()=>{const n=new Date(),t=new Date(Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate())),d=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-d);const y=t.getUTCFullYear();return y+'-W'+String(Math.ceil(((t-Date.UTC(y,0,1))/864e5+1)/7)).padStart(2,'0')};
+const reset=()=>{const n=new Date(),d=n.getUTCDay()||7;return Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate()+8-d)};
+const uid=async()=>auth.currentUser?auth.currentUser.uid:(await signInAnonymously(auth)).user.uid;
+const coll=w=>collection(db,'weeks',w,'scores');
+const rankOf=async(w,s)=>(await getCountFromServer(query(coll(w),where('score','>',s)))).data().count+1;
+window.LB={
+ async submit(name,score,level){const w=wk(),id=await uid(),ref=doc(db,'weeks',w,'scores',id),old=await getDoc(ref);let s=score;
+  if(old.exists()&&old.data().score>=score)s=old.data().score;else await setDoc(ref,{name,score,level,updated:serverTimestamp()});
+  return{rank:await rankOf(w,s)}},
+ async top(){const w=wk(),id=await uid(),snap=await getDocs(query(coll(w),orderBy('score','desc'),limit(10))),mine=await getDoc(doc(db,'weeks',w,'scores',id)),ms=mine.exists()?mine.data().score:0;
+  return{week:w,reset:reset(),rows:snap.docs.map(d=>({id:d.id,...d.data()})),me:id,myScore:ms,myRank:mine.exists()?await rankOf(w,ms):0}}};
+dispatchEvent(new Event('lbready'));
+}catch(e){console.warn('Leaderboard unavailable',e)}
+</script>
+</body></html>
