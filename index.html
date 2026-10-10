@@ -134,6 +134,10 @@ body{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
 #snd,#rb{top:40px}
 @media (prefers-reduced-motion:reduce){.hero .t2{animation:none}}
 #start #nmerr{margin:-4px 0 12px;color:#ff9a8a;font-size:14px}
+#nml{display:block;margin:0 0 6px;font-size:14px;opacity:.85}
+#nm:placeholder-shown{border-color:var(--gold);animation:nmp 1.6s ease-in-out infinite}
+@keyframes nmp{50%{box-shadow:0 0 0 4px #e0a93f55}}
+#go:disabled{opacity:.45;cursor:not-allowed}
 @media (prefers-reduced-motion:reduce){.tk{overflow-x:auto}.tk-in{animation:none}}
 @media (prefers-reduced-motion:reduce){.ball{transition-duration:.01s}.b{animation-duration:.01s!important}}
 </style></head>
@@ -145,8 +149,8 @@ body{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
 <p id="msg" aria-live="polite">Match 4 for a cue ball (clears a row) or 5 for chalk (clears row and column, +2 shots). Stripes +8. 8-balls are wild.</p>
 </main>
 <div class="tk" aria-hidden="true"><div class="tk-in" id="tki"></div></div>
-<div id="rules" hidden><div><h2>How to play</h2><ul id="rl"></ul><button id="rc">Got it</button><small style="display:block;text-align:center;opacity:.5;margin-top:10px">v10-10c</small></div></div>
-<div id="start"><div><h2>Pocket Match</h2><p>Match 3+ balls of a colour. Each ball scores its number × 10, and rare black 8-balls are wild and double the match.</p><noscript><p><b>JavaScript is off.</b> Open this page in Safari or Chrome rather than a chat preview.</p></noscript><input id="nm" maxlength="12" placeholder="Your name" autocomplete="nickname" aria-label="Your name"><p id="nmerr" hidden></p><button id="go">Break off</button><button id="rbs">How to play</button><button id="lbo" class="ghost" hidden>This week's top 10</button></div></div>
+<div id="rules" hidden><div><h2>How to play</h2><ul id="rl"></ul><button id="rc">Got it</button><small style="display:block;text-align:center;opacity:.5;margin-top:10px">v10-10d</small></div></div>
+<div id="start"><div><h2>Pocket Match</h2><p>Match 3+ balls of a colour. Each ball scores its number × 10, and rare black 8-balls are wild and double the match.</p><noscript><p><b>JavaScript is off.</b> Open this page in Safari or Chrome rather than a chat preview.</p></noscript><label for="nm" id="nml">Choose your leaderboard name</label><input id="nm" maxlength="12" placeholder="Tap here and type your name" autocomplete="nickname" enterkeyhint="go" aria-label="Your name"><p id="nmerr" hidden></p><button id="go" disabled>Enter a name to start</button><button id="rbs">How to play</button><button id="lbo" class="ghost" hidden>This week's top 10</button></div></div>
 <div id="over" hidden><canvas id="cf"></canvas><div><h2 id="oh">Out of shots</h2><b id="big">0</b><p id="fin"></p><button id="again" hidden>Rack again</button><button id="shr" hidden>Share score</button><button id="lbb" class="ghost" hidden>Weekly top 10</button></div></div>
 <div id="lb" hidden><div><h2>Weekly top 10</h2><p id="lbsub"></p><ol id="lbl"></ol><button id="lbc">Close</button></div></div>
 <div id="prev" hidden><div><img id="pimg" alt="Score card"><a id="wa" target="_blank" rel="noopener">Send on WhatsApp</a><button id="sv" hidden>Save image</button><p>Tip: save the image, then attach it in WhatsApp or any app. Or press and hold the card.</p><button id="pcl">Close</button></div></div>
@@ -304,7 +308,7 @@ function newGame(){cfOn=false;clearHint();board.innerHTML='';g=[];score=0;shots=
  ui();setTimeout(()=>{all.forEach(b=>b.el.style.transitionDelay='');busy=false;armHint()},1000)}
 $('again').onclick=newGame;$('shr').onclick=shareCard;$('pcl').onclick=()=>$('prev').hidden=true;
 let pname='';try{pname=localStorage.getItem('pm-name')||''}catch(e){}
-$('nm').value=pname;
+if(/^player$/i.test(pname))pname='';$('nm').value=pname;
 function cleanName(){return($('nm').value||'').replace(/[^\w .'-]/g,'').trim().slice(0,12)}
 function lbOn(){$('lbo').hidden=false}
 if(window.LB)lbOn();addEventListener('lbready',lbOn);
@@ -343,15 +347,21 @@ async function shareCard(){try{await document.fonts.load('80px "Bowlby One"')}ca
  $('prev').hidden=false}
 score=0;shots=SH;ui();
 const nmErr=t=>{const e=$('nmerr');e.textContent=t;e.hidden=!t};
-$('nm').addEventListener('input',()=>nmErr(''));
+const okName=n=>n.length>=2&&!/^(player|your name)$/i.test(n);
+const nmSync=()=>{const ok=okName(cleanName()),b=$('go');if(!b.dataset.busy){b.disabled=!ok;b.textContent=ok?'Break off':'Enter a name to start'}};
+$('nm').addEventListener('input',()=>{nmErr('');nmSync()});
+$('nm').addEventListener('focus',e=>{if(/^player$/i.test(e.target.value))e.target.value='';else e.target.select();nmSync()});
+$('nm').addEventListener('keydown',e=>{if(e.key=='Enter'&&!$('go').disabled){e.preventDefault();$('nm').blur();$('go').click()}});
+nmSync();
 $('go').onclick=async()=>{try{unlock();playing=true;musicSync()}catch(e){}
  const n=cleanName(),b=$('go');
- if(window.LB){if(!n){nmErr('Pick a name for the leaderboard.');return}
-  b.disabled=true;b.textContent='Checking name...';
+ if(!okName(n)){nmErr(n?'Please choose your own name.':'Tap the box and enter your name first.');$('nm').focus();return}
+ if(window.LB){
+  b.dataset.busy=1;b.disabled=true;b.textContent='Checking name...';
   try{await Promise.race([LB.claim(n),new Promise((_,j)=>setTimeout(()=>j({code:'timeout'}),8000))])}
-  catch(e){b.disabled=false;b.textContent='Break off';if(e&&e.code=='name-taken'){nmErr('That name is already taken. Try another.');return}}
-  b.disabled=false;b.textContent='Break off'}
- pname=n||'Player';try{localStorage.setItem('pm-name',pname)}catch(e){}
+  catch(e){delete b.dataset.busy;nmSync();if(e&&e.code=='name-taken'){nmErr('That name is already taken. Try another.');return}}
+  delete b.dataset.busy;nmSync()}
+ pname=n;try{localStorage.setItem('pm-name',pname)}catch(e){}
  $('start').hidden=true;newGame()};
 </script><script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
