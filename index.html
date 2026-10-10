@@ -144,7 +144,7 @@ body{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
 <p id="msg" aria-live="polite">Match 4 for a cue ball (clears a row) or 5 for chalk (clears row and column, +2 shots). Stripes +8. 8-balls are wild.</p>
 </main>
 <div class="tk" aria-hidden="true"><div class="tk-in" id="tki"></div></div>
-<div id="rules" hidden><div><h2>How to play</h2><ul id="rl"></ul><button id="rc">Got it</button></div></div>
+<div id="rules" hidden><div><h2>How to play</h2><ul id="rl"></ul><button id="rc">Got it</button><small style="display:block;text-align:center;opacity:.5;margin-top:10px">v10-10b</small></div></div>
 <div id="start"><div><h2>Pocket Match</h2><p>Match 3+ balls of a colour. Each ball scores its number × 10, and rare black 8-balls are wild and double the match.</p><noscript><p><b>JavaScript is off.</b> Open this page in Safari or Chrome rather than a chat preview.</p></noscript><input id="nm" maxlength="12" placeholder="Your name" autocomplete="nickname" aria-label="Your name"><button id="go">Break off</button><button id="rbs">How to play</button><button id="lbo" class="ghost" hidden>This week's top 10</button></div></div>
 <div id="over" hidden><canvas id="cf"></canvas><div><h2 id="oh">Out of shots</h2><b id="big">0</b><p id="fin"></p><button id="again" hidden>Rack again</button><button id="shr" hidden>Share score</button><button id="lbb" class="ghost" hidden>Weekly top 10</button></div></div>
 <div id="lb" hidden><div><h2>Weekly top 10</h2><p id="lbsub"></p><ol id="lbl"></ol><button id="lbc">Close</button></div></div>
@@ -214,8 +214,8 @@ function wildFx(w,m,pts){const cs=board.clientWidth/N,cx=(w.c+.5)*cs,cy=(w.r+.5)
  $('score').animate([{transform:'scale(1)'},{transform:'scale(1.5)',color:'#ffd36a'},{transform:'scale(1)'}],{duration:500})}
 function rowSet(q){const m=new Set(g[q.r]);if(q.t==CHALK)g.forEach(row=>m.add(row[q.c]));m.v=new Map();m.forEach(b=>m.v.set(b,b===q?0:((b.t==W?8:T[b.t].n)+(b.s?8:0))*10));
  const e=document.createElement('i');e.className='streak';e.style.top=q.r*12.5+'%';board.appendChild(e);setTimeout(()=>e.remove(),700);whoosh(.9);if(q.t==CHALK){const v=document.createElement('i');v.className='streak v';v.style.left=q.c*12.5+'%';board.appendChild(v);setTimeout(()=>v.remove(),700);whoosh(1)}board.animate([{transform:'translate(0)'},{transform:'translate(-5px,2px)'},{transform:'translate(5px,-2px)'},{transform:'translate(0)'}],{duration:300});return m}
-async function levelUp(){const bonus=shots*100;score+=bonus;level++;lvScore=0;shots=SH;ui();
- const bn=$('bn');bn.innerHTML='<b>Level '+(level-1)+' clear!</b><span>'+(bonus?'+'+bonus+' shot bonus':'')+'</span>';bn.hidden=false;
+async function levelUp(){const bonus=shots*100,surplus=lvScore-target();score+=bonus;level++;const carry=Math.max(0,Math.min(surplus,target()-1));lvScore=carry;shots=SH;ui();submitScore(1);
+ const bn=$('bn');bn.innerHTML='<b>Level '+(level-1)+' clear!</b><span>'+(bonus?'+'+bonus+' shot bonus':'')+(carry?'<br>'+carry+' points carried over':'')+'</span>';bn.hidden=false;
  const fl=document.createElement('i');fl.className='flash';board.appendChild(fl);setTimeout(()=>fl.remove(),600);
  [523,659,784,1047].forEach((f,i)=>tone(f,i*.09,.4,.16,'triangle'));say('Level '+level+': reach '+target()+' points.');await sleep(1800);bn.hidden=true;await reRack('Level '+level+': fresh rack. Reach '+target()+' points.')}
 async function resolve(f){let combo=0;
@@ -308,14 +308,15 @@ function cleanName(){return($('nm').value||'').replace(/[^\w .'-]/g,'').trim().s
 function lbOn(){$('lbo').hidden=false}
 if(window.LB)lbOn();addEventListener('lbready',lbOn);
 const fmt=ms=>{const m=Math.max(0,Math.floor(ms/6e4)),d=Math.floor(m/1440),h=Math.floor(m%1440/60);return d?d+'d '+h+'h':h+'h '+m%60+'m'};
-async function submitScore(){if(!window.LB||score<=0)return;try{const r=await LB.submit(pname||'Player',score,level);$('fin').textContent+=' You are #'+r.rank+' this week.'}catch(e){}}
+async function submitScore(q){if(!window.LB||score<=0)return;try{const r=await LB.submit(pname||'Player',score,level);if(!q)$('fin').textContent+=' You are #'+r.rank+' this week.'}catch(e){console.warn('Score not saved',e);if(!q)$('fin').textContent+=' (Score not saved: '+(e.code||e.message||'error')+')'}}
+addEventListener('pagehide',()=>submitScore(1));document.addEventListener('visibilitychange',()=>{if(document.hidden)submitScore(1)});
 async function showLB(){if(!window.LB)return;const el=$('lbl');$('lb').hidden=false;$('lbsub').textContent='Loading...';el.innerHTML='';
- try{const r=await LB.top();$('lbsub').textContent='Week '+r.week.split('-W')[1]+'. Resets in '+fmt(r.reset-Date.now())+(r.rows.length?'':'. No scores yet, be the first!');
+ try{const r=await Promise.race([LB.top(),new Promise((_,j)=>setTimeout(()=>j({code:'timeout'}),15000))]);$('lbsub').textContent='Week '+r.week.split('-W')[1]+'. Resets in '+fmt(r.reset-Date.now())+(r.rows.length?'':'. No scores yet, be the first!');
   const add=(rk,name,sc,me)=>{const li=document.createElement('li');if(me)li.className='me';li.innerHTML='<span class="rk"></span><span class="nm"></span><span class="sc"></span>';li.children[0].textContent=rk;li.children[1].textContent=name;li.children[2].textContent=sc;el.appendChild(li)};
   r.rows.forEach((x,i)=>add(i+1,x.name+' (L'+x.level+')',x.score,x.id==r.me));
-  if(r.myRank>r.rows.length)add(r.myRank,'You',r.myScore,true)}catch(e){$('lbsub').textContent='Could not load the leaderboard.'}}
+  if(r.myRank>r.rows.length)add(r.myRank,'You',r.myScore,true)}catch(e){console.warn('Leaderboard error',e);$('lbsub').textContent='Could not load ('+(e.code||e.message||'error')+')'}}
 $('lbo').onclick=$('lbb').onclick=showLB;$('lbc').onclick=()=>$('lb').hidden=true;
-const TIPS=['Swap two neighbouring balls to make a line of 3 or more','Spots and stripes of the same colour match together','Each ball scores its number \u00d7 10, and stripes get +8','Match 4 for a cue ball: swap it to clear a row','Match 5 for chalk: swap it to clear a row and column and gain 2 shots','The black 8-ball is wild and doubles the match','Chains multiply your score','Hit the level target before your shots run out'];
+const TIPS=['Swap two neighbouring balls to make a line of 3 or more','Spots and stripes of the same colour match together','Each ball scores its number \u00d7 10, and stripes get +8','Match 4 for a cue ball: swap it to clear a row','Match 5 for chalk: swap it to clear a row and column and gain 2 shots','The black 8-ball is wild and doubles the match','Chains multiply your score','Hit the level target before your shots run out','Points over a level target carry into the next level'];
 {const tp=TIPS.map(x=>'<i>'+x+'</i>').join('');$('tki').innerHTML='<span>'+tp+'</span><span>'+tp+'</span>'}
 $('rl').innerHTML=TIPS.map(x=>'<li>'+x+'</li>').join('');
 $('rb').onclick=$('rbs').onclick=()=>{$('rules').hidden=false};$('rc').onclick=()=>{$('rules').hidden=true};
@@ -344,10 +345,10 @@ $('go').onclick=()=>{pname=cleanName();try{localStorage.setItem('pm-name',pname)
 </script><script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import{getAuth,signInAnonymously}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import{getFirestore,doc,getDoc,setDoc,collection,query,where,orderBy,limit,getDocs,getCountFromServer,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import{initializeFirestore,doc,getDoc,setDoc,collection,query,where,orderBy,limit,getDocs,getCountFromServer,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 try{
 const app=initializeApp({apiKey:"AIzaSyAXYqvWqiKIKVfMCkAMvPvdaLXbSD0leuw",authDomain:"pocketmatch-8c8bc.firebaseapp.com",projectId:"pocketmatch-8c8bc",storageBucket:"pocketmatch-8c8bc.firebasestorage.app",messagingSenderId:"1072856545240",appId:"1:1072856545240:web:87cb39649122a4a27da4ad"});
-const auth=getAuth(app),db=getFirestore(app);
+const auth=getAuth(app),db=initializeFirestore(app,{experimentalAutoDetectLongPolling:true});
 const wk=()=>{const n=new Date(),t=new Date(Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate())),d=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-d);const y=t.getUTCFullYear();return y+'-W'+String(Math.ceil(((t-Date.UTC(y,0,1))/864e5+1)/7)).padStart(2,'0')};
 const reset=()=>{const n=new Date(),d=n.getUTCDay()||7;return Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate()+8-d)};
 const uid=async()=>auth.currentUser?auth.currentUser.uid:(await signInAnonymously(auth)).user.uid;
