@@ -93,9 +93,11 @@ main{position:relative}
 #wa{display:block;background:#25d366;color:#06361a;font:16px "Bowlby One",Impact,sans-serif;border-radius:999px;padding:12px 26px;text-decoration:none;margin:0 0 10px}
 #sv:not([hidden]){display:block;margin:0 auto 10px;background:transparent;color:var(--gold);border:2px solid var(--gold)}
 #prev p{margin:4px 0 14px;font-size:13px;opacity:.8}
-.ball.chalk .b{border-radius:16%;background:linear-gradient(145deg,#8fc4ff,#2f6fdc 55%,#1a3f94);box-shadow:0 3px 6px #0008,inset 0 -5px 8px #0006,0 0 14px 3px #6fb2ff99;animation:wob 1s ease-in-out infinite alternate}
+.ball.chalk .b{inset:2%;border-radius:0;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22t%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23b8dcff%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%236aa8f5%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22l%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%234a82e0%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%232a54b0%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22r%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%232a56b0%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%231a3a82%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpolygon%20points%3D%2212%2C30%2050%2C50%2050%2C90%2012%2C70%22%20fill%3D%22url%28%23l%29%22%2F%3E%3Cpolygon%20points%3D%2250%2C50%2088%2C30%2088%2C70%2050%2C90%22%20fill%3D%22url%28%23r%29%22%2F%3E%3Cpolygon%20points%3D%2250%2C10%2088%2C30%2050%2C50%2012%2C30%22%20fill%3D%22url%28%23t%29%22%2F%3E%3Cpolygon%20points%3D%2250%2C19%2074%2C30%2050%2C41%2026%2C30%22%20fill%3D%22%23f4f8ff%22%20fill-opacity%3D%22.92%22%20stroke%3D%22%238fb8f0%22%20stroke-width%3D%221%22%2F%3E%3Ccircle%20cx%3D%2238%22%20cy%3D%2227%22%20r%3D%221.6%22%20fill%3D%22%23fff%22%2F%3E%3Ccircle%20cx%3D%2262%22%20cy%3D%2233%22%20r%3D%221.3%22%20fill%3D%22%23fff%22%2F%3E%3Ccircle%20cx%3D%2255%22%20cy%3D%2224%22%20r%3D%221%22%20fill%3D%22%23fff%22%2F%3E%3Ccircle%20cx%3D%2220%22%20cy%3D%2240%22%20r%3D%221.2%22%20fill%3D%22%23fff%22%20fill-opacity%3D%22.6%22%2F%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%230d2a66%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%3E%3Cpolygon%20points%3D%2250%2C10%2088%2C30%2088%2C70%2050%2C90%2012%2C70%2012%2C30%22%2F%3E%3Cpolyline%20points%3D%2212%2C30%2050%2C50%2088%2C30%22%2F%3E%3Cline%20x1%3D%2250%22%20y1%3D%2250%22%20x2%3D%2250%22%20y2%3D%2290%22%2F%3E%3C%2Fg%3E%3Cpolyline%20points%3D%2212%2C30%2050%2C10%2088%2C30%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%22.6%22%20stroke-width%3D%221.2%22%2F%3E%3C%2Fsvg%3E") center/100% 100% no-repeat;box-shadow:none;filter:drop-shadow(0 0 7px #6fb2ffaa) drop-shadow(0 3px 3px #0009);animation:wob 1s ease-in-out infinite alternate}
+.ball.chalk.sel .b{box-shadow:none;filter:drop-shadow(0 0 5px #e0a93f) drop-shadow(0 0 3px #e0a93f)}
+.ball.chalk.hint .b{box-shadow:none;animation:hintc 1.2s ease-in-out infinite}
+@keyframes hintc{50%{transform:scale(1.14)}}
 .ball.chalk .b span{display:none}
-.ball.chalk .b::before{content:'';position:absolute;left:18%;right:18%;top:16%;height:26%;border-radius:25%;background:radial-gradient(ellipse at 50% 60%,#fff 0,#dfeaffcc 55%,#fff0 100%)}
 .streak.v{top:0;width:12.5%;height:100%;background:linear-gradient(180deg,#fff0,#fff 50%,#fff0);animation:stkv .5s ease-out forwards}
 @keyframes stkv{from{transform:translateY(-100%);opacity:1}to{transform:translateY(100%);opacity:0}}
 .ghost{background:transparent;color:var(--gold);border:2px solid var(--gold)}
@@ -139,7 +141,7 @@ body{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
 <div class="stats"><div><b id="score">0</b><span>Score</span></div><div><b id="shots">30</b><span>Shots left</span></div><div><b id="best">0</b><span>Best</span></div></div>
 <div id="lv"><span id="lvt">Level 1</span><div class="bar"><i id="barf"></i></div><span id="lvg"></span></div>
 <div class="rail"><i class="pk"></i><i class="pk"></i><i class="pk"></i><i class="pk"></i><div id="board"></div><div id="bn" hidden></div></div>
-<p id="msg" aria-live="polite">Match 4 for a cue ball (clears a row) or 5 for chalk (clears row and column). Stripes +8. 8-balls are wild.</p>
+<p id="msg" aria-live="polite">Match 4 for a cue ball (clears a row) or 5 for chalk (clears row and column, +2 shots). Stripes +8. 8-balls are wild.</p>
 </main>
 <div class="tk" aria-hidden="true"><div class="tk-in" id="tki"></div></div>
 <div id="rules" hidden><div><h2>How to play</h2><ul id="rl"></ul><button id="rc">Got it</button></div></div>
@@ -234,7 +236,9 @@ const adj=(a,b)=>Math.abs(a.r-b.r)+Math.abs(a.c-b.c)==1;
 function clearSel(){if(sel)sel.el.classList.remove('sel');sel=null}
 async function trySwap(a,b){if(busy)return;busy=true;clearSel();clack(.8,.3);swapCells(a,b);await sleep(280);
  const sp=t=>t==CUE||t==CHALK,q=sp(a.t)?a:sp(b.t)?b:null;if(!q&&!find().size){swapCells(a,b);await sleep(280);say('No match there. Try another swap.');tone(180,0,.12,.25,'triangle');busy=false;armHint();return}
- shots--;ui();await resolve(q?rowSet(q):0);
+ shots--;ui();
+ if(q&&q.t==CHALK){shots+=2;ui();const e=document.createElement('i');e.className='x2';e.style.cssText='left:'+(q.c+.5)*12.5+'%;top:'+(q.r+.5)*12.5+'%';e.textContent='+2 SHOTS';board.appendChild(e);setTimeout(()=>e.remove(),1100);[784,988,1175,1568].forEach((f,i)=>tone(f,i*.07,.3,.12,'triangle'));$('shots').animate([{transform:'scale(1)'},{transform:'scale(1.5)'},{transform:'scale(1)'}],{duration:500})}
+ await resolve(q?rowSet(q):0);
  if(lvScore>=target())await levelUp();else if(shots<=0){end();return}
  if(!hasMove())await reRack();
  busy=false;armHint()}
@@ -290,7 +294,7 @@ function down(e,b){if(busy)return;e.preventDefault();armHint();au();
   let r=b.r,c=b.c;if(Math.abs(dx)>Math.abs(dy))c+=dx>0?1:-1;else r+=dy>0?1:-1;
   if(g[r]&&g[r][c])trySwap(b,g[r][c])}
  addEventListener('pointermove',mv);addEventListener('pointerup',off)}
-function newGame(){cfOn=false;clearHint();board.innerHTML='';g=[];score=0;shots=SH;level=1;lvScore=0;sel=null;busy=true;$('over').hidden=true;say('Match 4 for a cue ball (clears a row) or 5 for chalk (clears row and column). Stripes +8. 8-balls are wild.');
+function newGame(){cfOn=false;clearHint();board.innerHTML='';g=[];score=0;shots=SH;level=1;lvScore=0;sel=null;busy=true;$('over').hidden=true;say('Match 4 for a cue ball (clears a row) or 5 for chalk (clears row and column, +2 shots). Stripes +8. 8-balls are wild.');
  const all=[];
  for(let r=0;r<N;r++){g[r]=[];for(let c=0;c<N;c++){let t;
   do{t=rnd()}while((c>1&&g[r][c-1].t==t&&g[r][c-2].t==t)||(r>1&&g[r-1][c].t==t&&g[r-2][c].t==t));
@@ -311,7 +315,7 @@ async function showLB(){if(!window.LB)return;const el=$('lbl');$('lb').hidden=fa
   r.rows.forEach((x,i)=>add(i+1,x.name+' (L'+x.level+')',x.score,x.id==r.me));
   if(r.myRank>r.rows.length)add(r.myRank,'You',r.myScore,true)}catch(e){$('lbsub').textContent='Could not load the leaderboard.'}}
 $('lbo').onclick=$('lbb').onclick=showLB;$('lbc').onclick=()=>$('lb').hidden=true;
-const TIPS=['Swap two neighbouring balls to make a line of 3 or more','Spots and stripes of the same colour match together','Each ball scores its number \u00d7 10, and stripes get +8','Match 4 for a cue ball: swap it to clear a row','Match 5 for chalk: swap it to clear a row and column','The black 8-ball is wild and doubles the match','Chains multiply your score','Hit the level target before your shots run out'];
+const TIPS=['Swap two neighbouring balls to make a line of 3 or more','Spots and stripes of the same colour match together','Each ball scores its number \u00d7 10, and stripes get +8','Match 4 for a cue ball: swap it to clear a row','Match 5 for chalk: swap it to clear a row and column and gain 2 shots','The black 8-ball is wild and doubles the match','Chains multiply your score','Hit the level target before your shots run out'];
 {const tp=TIPS.map(x=>'<i>'+x+'</i>').join('');$('tki').innerHTML='<span>'+tp+'</span><span>'+tp+'</span>'}
 $('rl').innerHTML=TIPS.map(x=>'<li>'+x+'</li>').join('');
 $('rb').onclick=$('rbs').onclick=()=>{$('rules').hidden=false};$('rc').onclick=()=>{$('rules').hidden=true};
