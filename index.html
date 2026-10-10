@@ -133,6 +133,7 @@ body{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
 .hero .t2{position:relative;font:clamp(28px,9vw,40px)/1.05 "Bowlby One",Impact,sans-serif;text-transform:uppercase;background:linear-gradient(90deg,#e0a93f 0,#e0a93f 40%,#fff4c8 50%,#e0a93f 60%,#e0a93f 100%) 0 0/200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sh2 3.5s linear infinite;filter:drop-shadow(0 3px 0 #7a2a00) drop-shadow(0 0 6px #000)}
 #snd,#rb{top:40px}
 @media (prefers-reduced-motion:reduce){.hero .t2{animation:none}}
+#start #nmerr{margin:-4px 0 12px;color:#ff9a8a;font-size:14px}
 @media (prefers-reduced-motion:reduce){.tk{overflow-x:auto}.tk-in{animation:none}}
 @media (prefers-reduced-motion:reduce){.ball{transition-duration:.01s}.b{animation-duration:.01s!important}}
 </style></head>
@@ -144,8 +145,8 @@ body{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
 <p id="msg" aria-live="polite">Match 4 for a cue ball (clears a row) or 5 for chalk (clears row and column, +2 shots). Stripes +8. 8-balls are wild.</p>
 </main>
 <div class="tk" aria-hidden="true"><div class="tk-in" id="tki"></div></div>
-<div id="rules" hidden><div><h2>How to play</h2><ul id="rl"></ul><button id="rc">Got it</button><small style="display:block;text-align:center;opacity:.5;margin-top:10px">v10-10b</small></div></div>
-<div id="start"><div><h2>Pocket Match</h2><p>Match 3+ balls of a colour. Each ball scores its number × 10, and rare black 8-balls are wild and double the match.</p><noscript><p><b>JavaScript is off.</b> Open this page in Safari or Chrome rather than a chat preview.</p></noscript><input id="nm" maxlength="12" placeholder="Your name" autocomplete="nickname" aria-label="Your name"><button id="go">Break off</button><button id="rbs">How to play</button><button id="lbo" class="ghost" hidden>This week's top 10</button></div></div>
+<div id="rules" hidden><div><h2>How to play</h2><ul id="rl"></ul><button id="rc">Got it</button><small style="display:block;text-align:center;opacity:.5;margin-top:10px">v10-10c</small></div></div>
+<div id="start"><div><h2>Pocket Match</h2><p>Match 3+ balls of a colour. Each ball scores its number × 10, and rare black 8-balls are wild and double the match.</p><noscript><p><b>JavaScript is off.</b> Open this page in Safari or Chrome rather than a chat preview.</p></noscript><input id="nm" maxlength="12" placeholder="Your name" autocomplete="nickname" aria-label="Your name"><p id="nmerr" hidden></p><button id="go">Break off</button><button id="rbs">How to play</button><button id="lbo" class="ghost" hidden>This week's top 10</button></div></div>
 <div id="over" hidden><canvas id="cf"></canvas><div><h2 id="oh">Out of shots</h2><b id="big">0</b><p id="fin"></p><button id="again" hidden>Rack again</button><button id="shr" hidden>Share score</button><button id="lbb" class="ghost" hidden>Weekly top 10</button></div></div>
 <div id="lb" hidden><div><h2>Weekly top 10</h2><p id="lbsub"></p><ol id="lbl"></ol><button id="lbc">Close</button></div></div>
 <div id="prev" hidden><div><img id="pimg" alt="Score card"><a id="wa" target="_blank" rel="noopener">Send on WhatsApp</a><button id="sv" hidden>Save image</button><p>Tip: save the image, then attach it in WhatsApp or any app. Or press and hold the card.</p><button id="pcl">Close</button></div></div>
@@ -304,11 +305,11 @@ function newGame(){cfOn=false;clearHint();board.innerHTML='';g=[];score=0;shots=
 $('again').onclick=newGame;$('shr').onclick=shareCard;$('pcl').onclick=()=>$('prev').hidden=true;
 let pname='';try{pname=localStorage.getItem('pm-name')||''}catch(e){}
 $('nm').value=pname;
-function cleanName(){return($('nm').value||'').replace(/[^\w .'-]/g,'').trim().slice(0,12)||'Player'}
+function cleanName(){return($('nm').value||'').replace(/[^\w .'-]/g,'').trim().slice(0,12)}
 function lbOn(){$('lbo').hidden=false}
 if(window.LB)lbOn();addEventListener('lbready',lbOn);
 const fmt=ms=>{const m=Math.max(0,Math.floor(ms/6e4)),d=Math.floor(m/1440),h=Math.floor(m%1440/60);return d?d+'d '+h+'h':h+'h '+m%60+'m'};
-async function submitScore(q){if(!window.LB||score<=0)return;try{const r=await LB.submit(pname||'Player',score,level);if(!q)$('fin').textContent+=' You are #'+r.rank+' this week.'}catch(e){console.warn('Score not saved',e);if(!q)$('fin').textContent+=' (Score not saved: '+(e.code||e.message||'error')+')'}}
+async function submitScore(q){if(!window.LB||score<=0)return;try{const r=await LB.submit(pname||'Player',score,level);if(!q)$('fin').textContent+=' You are #'+r.rank+' this week.'}catch(e){console.warn('Score not saved',e);if(!q)$('fin').textContent+=' ('+(e.code=='name-taken'?'That name is taken, so this score was not saved. Choose another name next game.':'Score not saved: '+(e.code||e.message||'error'))+')'}}
 addEventListener('pagehide',()=>submitScore(1));document.addEventListener('visibilitychange',()=>{if(document.hidden)submitScore(1)});
 async function showLB(){if(!window.LB)return;const el=$('lbl');$('lb').hidden=false;$('lbsub').textContent='Loading...';el.innerHTML='';
  try{const r=await Promise.race([LB.top(),new Promise((_,j)=>setTimeout(()=>j({code:'timeout'}),15000))]);$('lbsub').textContent='Week '+r.week.split('-W')[1]+'. Resets in '+fmt(r.reset-Date.now())+(r.rows.length?'':'. No scores yet, be the first!');
@@ -341,11 +342,21 @@ async function shareCard(){try{await document.fonts.load('80px "Bowlby One"')}ca
  $('sv').onclick=async()=>{try{await dl.save({filename:'pocket-match-score.png',data:blob});$('sv').textContent='Saved!'}catch(e){if(e&&e.code!='declined')$('sv').textContent='Could not save'}};
  $('prev').hidden=false}
 score=0;shots=SH;ui();
-$('go').onclick=()=>{pname=cleanName();try{localStorage.setItem('pm-name',pname)}catch(e){}$('start').hidden=true;newGame();try{unlock();playing=true;musicSync()}catch(e){}};
+const nmErr=t=>{const e=$('nmerr');e.textContent=t;e.hidden=!t};
+$('nm').addEventListener('input',()=>nmErr(''));
+$('go').onclick=async()=>{try{unlock();playing=true;musicSync()}catch(e){}
+ const n=cleanName(),b=$('go');
+ if(window.LB){if(!n){nmErr('Pick a name for the leaderboard.');return}
+  b.disabled=true;b.textContent='Checking name...';
+  try{await Promise.race([LB.claim(n),new Promise((_,j)=>setTimeout(()=>j({code:'timeout'}),8000))])}
+  catch(e){b.disabled=false;b.textContent='Break off';if(e&&e.code=='name-taken'){nmErr('That name is already taken. Try another.');return}}
+  b.disabled=false;b.textContent='Break off'}
+ pname=n||'Player';try{localStorage.setItem('pm-name',pname)}catch(e){}
+ $('start').hidden=true;newGame()};
 </script><script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import{getAuth,signInAnonymously}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import{initializeFirestore,doc,getDoc,setDoc,collection,query,where,orderBy,limit,getDocs,getCountFromServer,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import{initializeFirestore,doc,getDoc,setDoc,deleteDoc,collection,query,where,orderBy,limit,getDocs,getCountFromServer,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 try{
 const app=initializeApp({apiKey:"AIzaSyAXYqvWqiKIKVfMCkAMvPvdaLXbSD0leuw",authDomain:"pocketmatch-8c8bc.firebaseapp.com",projectId:"pocketmatch-8c8bc",storageBucket:"pocketmatch-8c8bc.firebasestorage.app",messagingSenderId:"1072856545240",appId:"1:1072856545240:web:87cb39649122a4a27da4ad"});
 const auth=getAuth(app),db=initializeFirestore(app,{experimentalAutoDetectLongPolling:true});
@@ -354,8 +365,14 @@ const reset=()=>{const n=new Date(),d=n.getUTCDay()||7;return Date.UTC(n.getUTCF
 const uid=async()=>auth.currentUser?auth.currentUser.uid:(await signInAnonymously(auth)).user.uid;
 const coll=w=>collection(db,'weeks',w,'scores');
 const rankOf=async(w,s)=>(await getCountFromServer(query(coll(w),where('score','>',s)))).data().count+1;
-window.LB={
- async submit(name,score,level){const w=wk(),id=await uid(),ref=doc(db,'weeks',w,'scores',id),old=await getDoc(ref);let s=score;
+const nkey=n=>n.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'')||'x';
+async function claim(name){const id=await uid(),key=nkey(name),ref=doc(db,'names',key),s=await getDoc(ref);
+ if(s.exists()){if(s.data().uid!==id)throw{code:'name-taken'}}
+ else{try{await setDoc(ref,{uid:id,name})}catch(e){throw e.code=='permission-denied'?{code:'name-taken'}:e}}
+ try{const o=localStorage.getItem('pm-key');if(o&&o!==key)deleteDoc(doc(db,'names',o)).catch(()=>{});localStorage.setItem('pm-key',key)}catch(e){}
+ return true}
+window.LB={claim,
+ async submit(name,score,level){await claim(name);const w=wk(),id=await uid(),ref=doc(db,'weeks',w,'scores',id),old=await getDoc(ref);let s=score;
   if(old.exists()&&old.data().score>=score)s=old.data().score;else await setDoc(ref,{name,score,level,updated:serverTimestamp()});
   return{rank:await rankOf(w,s)}},
  async top(){const w=wk(),id=await uid(),snap=await getDocs(query(coll(w),orderBy('score','desc'),limit(10))),mine=await getDoc(doc(db,'weeks',w,'scores',id)),ms=mine.exists()?mine.data().score:0;
